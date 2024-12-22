@@ -1,0 +1,14 @@
+
+scrape_site:
+  description: >
+    Scrape the contents of https://cognitohealth.com
+  expected_output: >
+    Markdown version of the contents of the page. 
+  agent: scraper
+
+summarize_site:
+  description: >
+    Take a long form test and summarize it.
+  expected_output: >
+    No more than one paragraph describing the contents.
+  agent: summarizer
