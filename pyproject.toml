@@ -10,6 +10,7 @@ package-mode = false
 python = ">=3.10,<=3.13"
 agentstack = {extras = ["crewai"], version="0.2.2.2"}
 firecrawl-py = "^1.6.8"
+composio-crewai = "^0.6.6"
 
 [project.scripts]
 webscraper = "webscraper.main:run"

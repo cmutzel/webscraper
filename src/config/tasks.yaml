@@ -1,14 +1,14 @@
 
-scrape_site:
+get_pull_requests:
   description: >
-    Scrape the contents of https://cognitohealth.com
+    Get a list of open pull requests for a repository.
   expected_output: >
-    Markdown version of the contents of the page. 
-  agent: scraper
+    A list of github issues as markdown
+  agent: github
 
-summarize_site:
-  description: >
-    Take a long form test and summarize it.
-  expected_output: >
-    No more than one paragraph describing the contents.
-  agent: summarizer
+# summarize_pull_requests:
+#   description: >
+#     Take a long form test and summarize it.
+#   expected_output: >
+#     No more than one paragraph describing the contents.
+#   agent: summarizer

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from crew import WebscraperCrew
+from crew import GithubCrew
 import agentops
 
 agentops.init(default_tags=["crewai", "agentstack"])
@@ -11,7 +11,8 @@ def run():
     Run the crew.
     """
     inputs = {}
-    WebscraperCrew().crew().kickoff(inputs=inputs)
+    result = GithubCrew().crew().kickoff(inputs=inputs)
+    print(result)
 
 
 def train():
@@ -20,7 +21,7 @@ def train():
     """
     inputs = {}
     try:
-        WebscraperCrew().crew().train(
+        GithubCrew().crew().train(
             n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs
         )
 
@@ -33,7 +34,7 @@ def replay():
     Replay the crew execution from a specific task.
     """
     try:
-        WebscraperCrew().crew().replay(task_id=sys.argv[1])
+        GithubCrew().crew().replay(task_id=sys.argv[1])
 
     except Exception as e:
         raise Exception(f"An error occurred while replaying the crew: {e}")
@@ -45,7 +46,7 @@ def test():
     """
     inputs = {}
     try:
-        WebscraperCrew().crew().test(
+        GithubCrew().crew().test(
             n_iterations=int(sys.argv[1]), openai_model_name=sys.argv[2], inputs=inputs
         )
 
