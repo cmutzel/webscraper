@@ -1,42 +1,39 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from composio_crewai import ComposioToolSet, Action
+from crewai.knowledge.knowledge import Knowledge
+from crewai.knowledge.source.json_knowledge_source import JSONKnowledgeSource
+import os
+import yaml
+from typing import Dict, Any
 
-toolset = ComposioToolSet(api_key="8rl2ei1l0yqskegifhps5")
 
+json_source = JSONKnowledgeSource(file_paths=["issue_data.json"])
+
+# knowledge = Knowledge(
+#     collection_name="json_knowledge",
+#     sources=[json_source]
+# )
+
+# print(knowledge.query("Get all issues related to 'bug'"))
 
 @CrewBase
 class GithubCrew:
     # Agent definitions
     @agent
-    def github(self) -> Agent:
+    def issue_summarizer(self) -> Agent:
         return Agent(
-            config=self.agents_config["github"],
-            tools=toolset.get_tools(actions=[Action.GITHUB_LIST_PULL_REQUESTS]),
+            config=self.agents_config["issue_summarizer"],
+            tools=[],
             verbose=True,
         )
 
-    # @agent
-    # def summarizer(self) -> Agent:
-    #     return Agent(
-    #         config=self.agents_config["summarizer"],
-    #         tools=[],
-    #         verbose=True,
-    #     )
-
     # Task definitions
     @task
-    def get_pull_requests(self) -> Task:
+    def summarize_issues(self) -> Task:
         return Task(
-            config=self.tasks_config["get_pull_requests"],
+            config=self.tasks_config["summarize_issues"],
         )
-
-    # @task
-    # def summarize_site(self) -> Task:
-    #     return Task(
-    #         config=self.tasks_config["summarize_pull_requests"],
-    #     )
-
+    
     @crew
     def crew(self) -> Crew:
         """Creates the Test crew"""
@@ -46,5 +43,6 @@ class GithubCrew:
             process=Process.sequential,
             verbose=True,
             max_retry_limit=0,
+            knowledge_sources=[json_source],
             # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
         )

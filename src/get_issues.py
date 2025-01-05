@@ -5,7 +5,7 @@ from typing import Dict, Any
 import requests
 import os
 import argparse
-import yaml
+import json
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
@@ -88,19 +88,16 @@ def strip_body(raw_body):
             if strip in line:
                 do_strip = True
                 break
-        
+
         if not do_strip:
             stripped += line
 
     return stripped
 
 
-def write_issues(issues):
-    """
-    Write each issue to a file in ./data/issues/<issue_number>.txt
-    The file should use yml where the top-level keys are issue_number, title, body, labels, comments.
 
-    """
+def write_issues(issues):
+    issues_data = {}
     for issue in issues:
         issue_number = issue.get("number", "No number")
         issue_title = issue.get("title", "No title")
@@ -116,91 +113,17 @@ def write_issues(issues):
             "comments": comments_text,
         }
 
-        # make sure the directory exists
-        os.makedirs("./data/issues", exist_ok=True)
+        issues_data[issue_number] = issue_data
 
-        with open(f"./data/issues/{issue_number}.yml", "w") as f:
-            yaml.dump(issue_data, f)
+    with open(f"./knowledge/issue_data.json", "w") as f:
+        json.dump(issues_data, f)
 
 
 def retrieve_issues():
     repo_name = "cognitohealth/universe"
     issues = fetch_github_issues(repo_name)
     write_issues(issues)
-    # knowledge_content = build_knowledge_content(issues)
 
-    # print(knowledge_content.split("\n")[0:1000])
-    # with open("issues.txt", "w") as f:
-    #     f.write(knowledge_content)
-
-class GitHubIssuesKnowledgeSource(BaseKnowledgeSource):
-    """Knowledge source that fetches GitHub issues."""
-
-    def load_content(self) -> Dict[Any, str]:
-        """Load issues from file system"""
-        issues = []
-        for file in os.listdir("./data/issues"):
-            if file.endswith(".yml"):
-                with open(f"./data/issues/{file}", "r") as f:
-                    issue = yaml.safe_load(f)
-                    issues.append(issue)
-
-        formatted_data = self._format_issues(issues)
-        return {"GitHub Issues": formatted_data}
-
-    def _format_issues(self, issues: list) -> str:
-        """Format issues into readable text."""
-        formatted = "GitHub Issues:\n\n"
-        for issue in issues:
-            formatted += f"""
-                Title: {issue['title']}
-                Number: {issue['issue_number']}
-                Body: {issue['body']}
-                Labels: {issue['labels']}
-                Comments: {issue['comments']}
-                -------------------"""
-        return formatted
-
-    def add(self) -> None:
-        """Process and store the issues."""
-        content = self.load_content()
-        for _, text in content.items():
-            chunks = self._chunk_text(text)
-            self.chunks.extend(chunks)
-
-        self._save_documents()
-
-def run_crew():
-    issues_source = GitHubIssuesKnowledgeSource()
-    llm = LLM(model="gpt-4o", temperature=0)
-
-    agent = Agent(
-        role="Project manager",
-        goal="Provide insights about GitHub issues.",
-        backstory="You are an expert in understanding and summarizing GitHub issues that represent the current state of the product. You excel at providing a good summary of what needs to be addressed in the company to CEOs and executives",
-        verbose=True,
-        allow_delegation=False,
-        llm=llm,
-        knowledge_sources=[issues_source],
-    )
-
-    task = Task(
-        description="Answer the following questions about GitHub issues: {question}",
-        expected_output="A brief answer based on the provided issues",
-        agent=agent,
-    )
-
-    crew = Crew(
-        agents=[agent],
-        tasks=[task],
-        verbose=True,
-        process=Process.sequential,
-    )
-
-    result = crew.kickoff(
-        inputs={"question": "Summarize the issues related to EC Services"}
-    )
-    print(result)
 
 
 if __name__ == "__main__":
@@ -210,13 +133,10 @@ if __name__ == "__main__":
         action="store_true",
         help="Retrieve issues from GitHub and write to a file",
     )
-    parser.add_argument("--run", action="store_true", help="Run the CrewAI crew method")
 
     args = parser.parse_args()
 
     if args.retrieve_issues:
         retrieve_issues()
-    elif args.run:
-        run_crew()
     else:
         parser.print_help()

@@ -1,14 +1,8 @@
 
-get_pull_requests:
+summarize_issues:
   description: >
-    Get a list of open pull requests for a repository.
+    Summarize issues that exist in Github related to the Edge component. Name specific issues numbers in your response.
   expected_output: >
-    A list of github issues as markdown
-  agent: github
+    A brief response to the question from the user.
+  agent: issue_summarizer
 
-# summarize_pull_requests:
-#   description: >
-#     Take a long form test and summarize it.
-#   expected_output: >
-#     No more than one paragraph describing the contents.
-#   agent: summarizer
